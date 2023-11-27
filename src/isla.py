@@ -50,7 +50,7 @@ CORRECCIÓN DE ERRORES O PROBLEMAS:
 
 MEJORAS:
 
-* 1: Mostrar los números del tablero asociados a las filas y las columnas.
+1: Mostrar los números del tablero asociados a las filas y las columnas.
     Pero las filas y columnas que empiecen en el número 1 visualmente.
 
    1 2 3 4 5
@@ -62,18 +62,18 @@ MEJORAS:
 5 |  ? ? ? ?|
   -----------
 
-* 2: Mostrar la posición del jugador con respecto a la numeración visual del mapa.
+2: Mostrar la posición del jugador con respecto a la numeración visual del mapa.
 
 Tu posición es (3, 3)  #aunque internamente esté en la posición (2, 2)
 
-* 3: Evitar que en la posición inicial del jugador en el mapa se genere una pista o una trampa.
+3: Evitar que en la posición inicial del jugador en el mapa se genere una pista o una trampa.
 
-* 4: Limpiar la consola cada vez que realices un movimiento y dejar el mensaje de la pista o trampa en la zona superior de la consola, justo arriba del mapa. Pero cuando se encuentra el tesoro no debe borrar la consola y el mensaje aparecerá abajo y finalizará el juego.
+4: Limpiar la consola cada vez que realices un movimiento y dejar el mensaje de la pista o trampa en la zona superior de la consola, justo arriba del mapa. Pero cuando se encuentra el tesoro no debe borrar la consola y el mensaje aparecerá abajo y finalizará el juego.
 
 * 5 (DIFÍCIL): Mostrar un símbolo para el jugador. Para ello, una solución es cambiar el código de la función imprimir_mapa_oculto()
 """
 
-import random
+import random , os
 
 DIMENSIONES = 5
 
@@ -87,7 +87,7 @@ ARRIBA = "^"
 ABAJO = "v"
 DERECHA = ">"
 IZQUIERDA = "<"
-
+JUGADOR = "J"
 DESCONOCIDO = "?"
 
 # Constantes para el resultado del movimiento
@@ -109,6 +109,10 @@ COLUMNAS = 1
 # Código oculto del programador para realizar alguna acción que el usuario no sabe que existe. Si encuentras para qué se utiliza igual te sirve en tu aventura...
 CODIGO_OCULTO_PROGRAMADOR = "s"
 
+def borrarConsola():
+    """ Limpiar la consola """
+    os.system("cls")
+
 
 def inicializar_juego() -> tuple:
     """
@@ -127,6 +131,7 @@ def posicion_inicial_del_jugador() -> tuple:
     """ Devuelve la posición inicial del jugador. Actualmente es la posición central del mapa.
     :return: La posición inicial del jugador.
     """
+
     return DIMENSIONES // 2, DIMENSIONES // 2
 
 
@@ -151,7 +156,7 @@ def generar_mapa() -> list:
     # Colocar pistas y trampas
     for i in range(DIMENSIONES):
         for j in range(DIMENSIONES):
-            if mapa[i][j] != CELDA_TESORO:
+            if mapa[i][j] != CELDA_TESORO and i+j != 4 :#Si no esta en la posicion del jugador 
                 # Decidir aleatoriamente si colocar una pista, una trampa o vacia.
                 opciones = [genera_pista((tesoro_x, tesoro_y), (i, j))]
                 opciones += [CELDA_TRAMPA]
@@ -270,8 +275,14 @@ def simbolo_celda(celda):
 
 def imprimir_mapa_oculto(mapa: list):
     """Imprime el mapa sin revelar el tesoro ni las trampas."""
+    cont = 1
+    barra = "|"
+    print("    1 2 3 4 5 ")
+    print("  ","-"*11)
     for fila in mapa:
-        print(" ".join([simbolo_celda(celda) for celda in fila]))
+        print(cont,barra," ".join([simbolo_celda(celda) for celda in fila]),barra)
+        cont += 1
+    print("  ","-"*11)
 
 
 def imprimir_mapa(mapa: list):
@@ -292,21 +303,26 @@ def muestra_resultado_del_movimiento(resultado: int, nueva_posicion: tuple, mapa
 
     """
     if resultado == MOVIMIENTO_INVALIDO:
+        borrarConsola()
         print("Movimiento inválido. Estás intentando salir del mapa.")
     elif resultado == TESORO_ENCONTRADO:
         print("¡Has encontrado el tesoro y ganado el juego!")
     elif resultado == TRAMPA_ENCONTRADA:
+        borrarConsola()
         print("Es una trampa. Intenta de nuevo.")
     elif resultado == PISTA_ENCONTRADA:
+        borrarConsola()
         pista = mapa[nueva_posicion[FILAS]][nueva_posicion[COLUMNAS]]
         print(f"Hay una pista!!!! La pista es: {pista}")
 
 
 def muestra_estado_mapa(mapa, posicion_jugador):
     """Muestra el mapa y la posición del jugador."""
-
+    posicion = list(posicion_jugador)
+    posicion[0] +=1
+    posicion[-1] +=1
     imprimir_mapa_oculto(mapa)
-    print(f"Tu posición es {posicion_jugador}")
+    print(f"Tu posición es {posicion}")
 
 
 def jugar():
@@ -318,6 +334,7 @@ def jugar():
 
     movimiento = pedir_movimiento(mapa)
     resultado_movimiento = None
+    borrarConsola()
     # Loop principal del juego. El juego termina cuando el jugador realizar movimiento SALIR.
     while movimiento != SALIR and resultado_movimiento != TESORO_ENCONTRADO:
 
